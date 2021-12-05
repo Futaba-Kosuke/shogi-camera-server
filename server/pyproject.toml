@@ -9,6 +9,11 @@ license = "MIT"
 python = ">=3.9,<3.11"
 fastapi = "^0.70.0"
 uvicorn = "^0.15.0"
+black = "^21.11b1"
+isort = "^5.10.1"
+flake8 = "^4.0.1"
+mypy = "^0.910"
+tox = "^3.24.4"
 
 [tool.poetry.dev-dependencies]
 

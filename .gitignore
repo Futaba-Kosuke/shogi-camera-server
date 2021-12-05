@@ -5,6 +5,10 @@
 .venv/
 __pycache__/
 
+# linter/formatter
+.tox/
+.mypy_cache/
+
 # editor
 .idea/
 .vscode/
