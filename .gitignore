@@ -12,3 +12,6 @@ __pycache__/
 # editor
 .idea/
 .vscode/
+
+# dataset
+data/**/*.jpg
