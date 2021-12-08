@@ -26,8 +26,8 @@ def create_item(sente, gote) -> None:
 
     realID = users_ref.push(["平手"])
 
-    doc_ref = fireDB.collection("games")
-    doc_ref.add(
+    doc_ref = fireDB.collection("games").document(realID.key)
+    doc_ref.set(
         {
             "sente": sente,
             "gote": gote,
