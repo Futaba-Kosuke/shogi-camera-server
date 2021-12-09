@@ -1,12 +1,8 @@
----
-name: Pull Request
-about: ''
-title: ''
-labels: ''
-assignees: ''
+### Issue
 
----
+[comment]: <> (issue番号を書く)
 
+- 
 
 ### 作業内容
 

@@ -15,3 +15,7 @@ __pycache__/
 
 # dataset
 data/**/*.jpg
+
+# firebase
+firebase/.env
+firebase/cred.json

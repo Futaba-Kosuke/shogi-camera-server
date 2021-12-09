@@ -16,6 +16,8 @@ mypy = "^0.910"
 tox = "^3.24.4"
 opencv-python = "^4.5.4"
 scipy = "^1.7.3"
+firebase-admin = "^5.1.0"
+python-dotenv = "^0.19.2"
 
 [tool.poetry.dev-dependencies]
 
