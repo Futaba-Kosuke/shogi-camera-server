@@ -12,3 +12,7 @@ __pycache__/
 # editor
 .idea/
 .vscode/
+
+# firebase
+firebase/.env
+firebase/cred.json
