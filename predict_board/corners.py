@@ -98,7 +98,7 @@ def get_candidacy_areas(image: IntegerArrayType) -> List[IntegerArrayType]:
 
 # 候補領域を選定
 def get_selected_area(areas: List[IntegerArrayType]) -> IntegerArrayType:
-    squared_errors: List[float] = []
+    euclidean_distances: List[float] = []
     for area in areas:
         # 四隅の座標から辺の長さを計算
         line_lengths: List[float] = [
@@ -107,18 +107,18 @@ def get_selected_area(areas: List[IntegerArrayType]) -> IntegerArrayType:
         # 四隅の座標から領域の占める面積を計算し、正方形と仮定して一辺の長さを計算
         estimated_line_length: float = cv2.contourArea(area) ** 0.5
         # 正方形との誤差をユークリッド距離で計算
-        squared_error = sum(
+        euclidean_distance = sum(
             [
                 (line_length - estimated_line_length) ** 2
                 for line_length in line_lengths
             ]
         )
-        squared_errors.append(squared_error)
-    return areas[np.argmin(squared_errors)]
+        euclidean_distances.append(euclidean_distance)
+    return areas[np.argmin(euclidean_distances)]
 
 
 if __name__ == "__main__":
-    image: IntegerArrayType = cv2.imread("./data/test_01.jpg")
+    image: IntegerArrayType = cv2.imread("./data/test.jpg")
     corners = detect_corners(image)
 
     # 画像表示
