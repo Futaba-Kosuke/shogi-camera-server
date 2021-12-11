@@ -13,6 +13,10 @@ __pycache__/
 .idea/
 .vscode/
 
+# dataset
+data/**/*.jpg
+data/**/*.png
+
 # firebase
 firebase/.env
 firebase/cred.json
