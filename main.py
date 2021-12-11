@@ -8,11 +8,11 @@ from my_types import HelloWorldType
 app = FastAPI()
 
 
-class ReturnResponseKey(BaseModel):
+class StartResponseModel(BaseModel):
     id: str
 
 
-class StartRequestType(BaseModel):
+class StartRequestModel(BaseModel):
     sente: str
     gote: str
 
@@ -22,11 +22,10 @@ def root() -> HelloWorldType:
     return {"Hello": "Shogi"}
 
 
-@app.post("/start", response_model=ReturnResponseKey)
-def create_battle(item: StartRequestType):
-    sente = item.sente
-    gote = item.gote
-    realtime_key = db_operate.create_item(sente, gote)
+@app.post("/start", response_model=StartResponseModel)
+def create_game(item: StartRequestModel):
+    sente, gote = item.sente, item.gote
+    realtime_key = db_operate.create_game(sente=sente, gote=gote)
     return {"id": realtime_key}
 
 
