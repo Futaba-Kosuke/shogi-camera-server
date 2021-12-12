@@ -8,7 +8,7 @@ from classify_shogi_piece import mock_classify_pieces
 from firebase import db_operate
 from generate_kifu import mock_generate_kifu
 from my_types import HelloWorldType, IntegerArrayType
-from predict_board import mock_predict_board
+from predict_board import predict_board
 
 app = FastAPI()
 
@@ -50,11 +50,12 @@ async def move_piece(
     array: IntegerArrayType = np.fromstring(contents, np.uint8)
     image: IntegerArrayType = cv2.imdecode(array, cv2.IMREAD_COLOR)
 
-    # 盤面検出
-    board: IntegerArrayType = mock_predict_board(image=image)
+    # 各マス目画像を取得, shape: (マス目の数, マス目の縦幅, マス目の横幅, 色) = (81, 98, 91, 3)
+    square_images: IntegerArrayType = predict_board(image=image)
+    print(square_images.shape)
     # コマ検出
     pieces: IntegerArrayType = mock_classify_pieces(
-        image=board, model_path="./models/shogi_model.pth"
+        image=square_images, model_path="./models/shogi_model.pth"
     )
     # 棋譜生成
     kifu: str = mock_generate_kifu(pieces, is_sente)
