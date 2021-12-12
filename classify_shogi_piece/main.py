@@ -19,6 +19,7 @@ SHOGI_PIECES: List[str] = [
     "成香",
     "馬",
     "竜",
+    "と金",
 ]
 
 
