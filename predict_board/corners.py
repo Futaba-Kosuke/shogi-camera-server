@@ -121,6 +121,8 @@ if __name__ == "__main__":
     image: IntegerArrayType = cv2.imread("./data/test.jpg")
     corners = detect_corners(image)
 
+    print(corners)
+
     # 画像表示
     cv2.drawContours(image, [corners], -1, (0, 255, 0), 2)
     cv2.imshow("corners", image)
