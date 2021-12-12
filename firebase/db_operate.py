@@ -20,7 +20,7 @@ firebase_admin.initialize_app(
 firestore = firestore.client()
 
 
-def create_item(sente: str, gote: str) -> str:
+def create_game(sente: str, gote: str) -> str:
     # databaseに初期データを追加する
     users_ref = db.reference()
 

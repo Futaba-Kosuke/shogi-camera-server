@@ -6,5 +6,5 @@ import numpy.typing as npt
 IntegerArrayType: Final[Any] = npt.NDArray[np.int_]
 
 
-def mock_predict_board(image: IntegerArrayType) -> IntegerArrayType:
-    return image
+def mock_generate_kifu(pieces: IntegerArrayType, is_sente: bool) -> str:
+    return "7六歩(77)"
