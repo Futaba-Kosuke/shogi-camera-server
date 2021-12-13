@@ -59,7 +59,7 @@ if __name__ == "__main__":
     image: IntegerArrayType = cv2.imread("./data/test.jpg")
     # cornersで検出されたものを登録する
     corners: IntegerArrayType = np.array(
-        [[[758, 606]], [[30, 690]], [[118, 136]], [[610, 110]]]
+        [[[118, 136]], [[610, 110]], [[758, 606]], [[30, 690]]]
     )
     board_image: IntegerArrayType = get_board_image(
         image=image, corners=corners

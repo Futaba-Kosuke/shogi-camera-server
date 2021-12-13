@@ -27,7 +27,11 @@ def detect_corners(image: IntegerArrayType) -> IntegerArrayType:
         selected_area * image.shape[0] / image_processed.shape[0]
     )
 
-    return corners
+    normalize_corners: IntegerArrayType = get_normalize_corners(
+        corners=corners
+    )
+
+    return normalize_corners
 
 
 # 画像サイズ圧縮
@@ -115,6 +119,12 @@ def get_selected_area(areas: List[IntegerArrayType]) -> IntegerArrayType:
         )
         euclidean_distances.append(euclidean_distance)
     return areas[np.argmin(euclidean_distances)]
+
+
+def get_normalize_corners(corners: IntegerArrayType) -> IntegerArrayType:
+    roll: int = -2 * np.argmin([np.linalg.norm(corner) for corner in corners])
+    result: IntegerArrayType = np.roll(corners, roll)
+    return result
 
 
 if __name__ == "__main__":
