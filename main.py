@@ -1,3 +1,6 @@
+import os
+from typing import Final, List
+
 import cv2
 import numpy as np
 import uvicorn
@@ -11,6 +14,8 @@ from my_types import HelloWorldType, IntegerArrayType
 from predict_board import predict_board
 
 app = FastAPI()
+
+DATASET_DIR: Final[str] = "./data/dataset"
 
 
 class StartRequestModel(BaseModel):
@@ -62,6 +67,29 @@ async def move_piece(
     # DB登録
 
     return {"kifu": kifu}
+
+
+@app.post("/add_dataset")
+async def add_dataset(image_files: List[UploadFile] = File(...)):
+
+    for image_index, image_file in enumerate(image_files):
+        # 画像をnumpyとして読み込み
+        contents: bytes = await image_file.read()
+        array: IntegerArrayType = np.fromstring(contents, np.uint8)
+        image: IntegerArrayType = cv2.imdecode(array, cv2.IMREAD_COLOR)
+
+        # 各マス目画像を取得, shape: (マス目の数, マス目の縦幅, マス目の横幅, 色) = (81, 98, 91, 3)
+        square_images: IntegerArrayType = predict_board(image=image)
+
+        # マス目画像保存
+        for square_index, square_image in enumerate(square_images):
+            path: str = os.path.join(
+                DATASET_DIR,
+                "uncategorized",
+                f"{image_index}-{square_index}.jpg",
+            )
+            print(path)
+            cv2.imwrite(path, square_image)
 
 
 def main() -> None:
