@@ -1,8 +1,9 @@
-from typing import Any, Final, Iterable, List
+from typing import Any, Callable, Final, Iterable, List
 
 import cv2
 import numpy as np
 import numpy.typing as npt
+from scipy.optimize import basinhopping
 
 IntegerArrayType: Final[Any] = npt.NDArray[np.int_]
 FloatArrayType: Final[Any] = npt.NDArray[np.float_]
@@ -22,9 +23,22 @@ def detect_corners(image: IntegerArrayType) -> IntegerArrayType:
     # 候補領域を選定
     selected_area: IntegerArrayType = get_selected_area(areas=candidacy_areas)
 
+    # 最適化する目的関数を取得
+    cost_function: Callable[[FloatArrayType], float] = get_cost_function(
+        image=image_processed, area=selected_area
+    )
+    # 目的関数に沿って四隅座標を最適化
+    results: Any = basinhopping(
+        func=cost_function,
+        x0=selected_area.flatten(),
+        T=0.1,
+        niter=250,
+        stepsize=3,
+    )
+
     # 四隅座標とスコアを取得
     corners: IntegerArrayType = np.int32(
-        selected_area * image.shape[0] / image_processed.shape[0]
+        results.x.reshape(4, 2) * image.shape[0] / image_processed.shape[0]
     )
 
     normalize_corners: IntegerArrayType = get_normalize_corners(
@@ -119,6 +133,96 @@ def get_selected_area(areas: List[IntegerArrayType]) -> IntegerArrayType:
         )
         euclidean_distances.append(euclidean_distance)
     return areas[np.argmin(euclidean_distances)]
+
+
+def get_cost_function(
+    image: IntegerArrayType, area: IntegerArrayType
+) -> Callable[[FloatArrayType], float]:
+    def get_line_image(
+        image: IntegerArrayType, area: IntegerArrayType
+    ) -> IntegerArrayType:
+        line_image: IntegerArrayType = np.zeros(image.shape, np.uint8)
+
+        # 線分画像取得
+        edge_image: IntegerArrayType = get_edge_image(image=image)
+        # 周囲長取得
+        perimeter_length: float = cv2.arcLength(curve=area, closed=True)
+        # 直線取得
+        lines: IntegerArrayType = cv2.HoughLinesP(
+            image=edge_image,
+            rho=1,
+            theta=np.pi / 180,
+            threshold=int(perimeter_length / 12),
+            minLineLength=int(perimeter_length / 200),
+        )
+        # 直線を全て描画（不要な直線含む）
+        for x1, y1, x2, y2 in lines[:, 0]:
+            cv2.line(line_image, (x1, y1), (x2, y2), 255, 1)
+        # グレースケール化
+        line_image = line_image[:, :, 0]
+
+        # 領域外を描画範囲から除外
+        image_size: float = (image.shape[0] * image.shape[1]) ** 0.5
+        # マスク画像の生成
+        mask: IntegerArrayType = np.zeros(line_image.shape, np.uint8)
+        cv2.fillConvexPoly(mask, area, 1)
+        kernel = np.ones(
+            (int(image_size / 10), int(image_size / 10)), np.uint8
+        )
+        mask = cv2.erode(mask, kernel, iterations=1)
+        # マスクがけ
+        line_image[np.where(mask == 0)] = 0
+
+        return line_image
+
+    def get_board_image() -> FloatArrayType:
+        half_a = np.fromfunction(
+            lambda i, j: ((10 - i) ** 2) / 100.0, (10, 20), dtype=np.float32
+        )
+        half_b = np.rot90(half_a, 2)
+        cell_a = np.r_[half_a, half_b]
+        cell_b = np.rot90(cell_a)
+        cell = np.maximum(cell_a, cell_b)
+        return np.tile(cell, (9, 9))
+
+    # リサイズ
+    image = cv2.resize(
+        image, dsize=None, fx=0.7, fy=0.7, interpolation=cv2.INTER_AREA
+    )
+    area = np.int32(area * 0.7)
+
+    # 直線画像
+    line_image: IntegerArrayType = get_line_image(image=image, area=area)
+    # 最適化用画像
+    board_image: FloatArrayType = get_board_image()
+
+    def cost_function(corners: FloatArrayType) -> float:
+        image_corners: FloatArrayType = np.float32(corners).reshape(4, 2) * 0.7
+        board_size: int = board_image.shape[0]
+        board_corners: FloatArrayType = np.float32(
+            [
+                [0, 0],
+                [0, board_size],
+                [board_size, board_size],
+                [board_size, 0],
+            ]
+        )
+
+        # 射影変換の変換行列を生成／正面向きの盤面画像を予測された盤面の座標に合わせて射影
+        transform: FloatArrayType = cv2.getPerspectiveTransform(
+            src=board_corners, dst=image_corners
+        )
+        # 射影変換の実行
+        board_inclined: FloatArrayType = cv2.warpPerspective(
+            src=board_image,
+            M=transform,
+            dsize=(image.shape[1], image.shape[0]),
+        )
+
+        result = line_image * board_inclined
+        return -np.average(result[np.where(result > 255 * 0.1)])
+
+    return cost_function
 
 
 def get_normalize_corners(corners: IntegerArrayType) -> IntegerArrayType:
