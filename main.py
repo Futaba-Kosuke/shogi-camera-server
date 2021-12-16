@@ -7,13 +7,11 @@ import uvicorn
 from fastapi import FastAPI, File, Form, UploadFile
 from pydantic import BaseModel
 
-from classify_shogi_piece import mock_classify_pieces
+from classify_shogi_piece import ShogiModel
 from firebase import db_operate
 from generate_kifu import mock_generate_kifu
 from my_types import HelloWorldType, IntegerArrayType
 from predict_board import predict_board
-
-app = FastAPI()
 
 DATASET_DIR: Final[str] = "./data/dataset"
 
@@ -29,6 +27,10 @@ class StartResponseModel(BaseModel):
 
 class MoveResponseModel(BaseModel):
     kifu: str
+
+
+app = FastAPI()
+shogi_model = ShogiModel(model_path="./models/model.pth")
 
 
 @app.get("/")
@@ -49,7 +51,6 @@ async def move_piece(
     is_sente: bool = Form(...),
     image_file: UploadFile = File(...),
 ):
-
     # 画像をnumpyとして読み込み
     contents: bytes = await image_file.read()
     array: IntegerArrayType = np.fromstring(contents, np.uint8)
@@ -57,11 +58,9 @@ async def move_piece(
 
     # 各マス目画像を取得, shape: (マス目の数, マス目の縦幅, マス目の横幅, 色) = (81, 98, 91, 3)
     square_images: IntegerArrayType = predict_board(image=image)
-    print(square_images.shape)
     # コマ検出
-    pieces: IntegerArrayType = mock_classify_pieces(
-        image=square_images, model_path="./models/shogi_model.pth"
-    )
+    pieces: IntegerArrayType = shogi_model.predict(images=square_images)
+    print(pieces, pieces.shape)
     # 棋譜生成
     kifu: str = mock_generate_kifu(pieces, is_sente)
     # DB登録
@@ -71,7 +70,6 @@ async def move_piece(
 
 @app.post("/add_dataset")
 async def add_dataset(image_files: List[UploadFile] = File(...)):
-
     for image_index, image_file in enumerate(image_files):
         # 画像をnumpyとして読み込み
         contents: bytes = await image_file.read()
