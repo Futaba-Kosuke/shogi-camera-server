@@ -14,6 +14,7 @@ from my_types import HelloWorldType, IntegerArrayType
 from predict_board import predict_board
 
 DATASET_DIR: Final[str] = "./data/dataset"
+MODEL_PATH: Final[str] = "./models/model.pth"
 
 
 class StartRequestModel(BaseModel):
@@ -30,7 +31,7 @@ class MoveResponseModel(BaseModel):
 
 
 app = FastAPI()
-shogi_model = ShogiModel(model_path="./models/model.pth")
+shogi_model = ShogiModel(model_path=MODEL_PATH)
 
 
 @app.get("/")
