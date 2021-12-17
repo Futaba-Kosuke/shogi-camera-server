@@ -1,3 +1,5 @@
+from typing import Final
+
 import cv2
 import numpy as np
 import uvicorn
@@ -6,9 +8,24 @@ from pydantic import BaseModel
 
 from classify_shogi_piece import mock_classify_pieces
 from firebase import db_operate
-from generate_kifu import mock_generate_kifu
+from generate_kifu import generate_kifu
 from my_types import HelloWorldType, IntegerArrayType
 from predict_board import predict_board
+
+DEFAULT_BOARD: Final[IntegerArrayType] = np.array(
+    [
+        [-5, -4, -3, -2, -1, -2, -3, -4, -5],
+        [0, -6, 0, 0, 0, 0, 0, -7, 0],
+        [-8, -8, -8, -8, -8, -8, -8, -8, -8],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [8, 8, 8, 8, 8, 8, 8, 8, 8],
+        [0, 6, 0, 0, 0, 0, 0, 7, 0],
+        [5, 4, 3, 2, 1, 2, 3, 4, 5],
+    ]
+)
+
 
 app = FastAPI()
 
@@ -34,8 +51,9 @@ def root() -> HelloWorldType:
 @app.post("/start", response_model=StartResponseModel)
 def create_game(properties: StartRequestModel):
     sente, gote = properties.sente, properties.gote
-    realtime_key: str = db_operate.create_game(sente=sente, gote=gote)
-    return {"id": realtime_key}
+    id: str = db_operate.create_game(sente=sente, gote=gote)
+    np.savetxt(f"./data/csv/{id}.csv", DEFAULT_BOARD, delimiter=",", fmt="%d")
+    return {"id": id}
 
 
 @app.post("/move", response_model=MoveResponseModel)
@@ -52,13 +70,14 @@ async def move_piece(
 
     # 各マス目画像を取得, shape: (マス目の数, マス目の縦幅, マス目の横幅, 色) = (81, 98, 91, 3)
     square_images: IntegerArrayType = predict_board(image=image)
-    print(square_images.shape)
     # コマ検出
     pieces: IntegerArrayType = mock_classify_pieces(
         image=square_images, model_path="./models/shogi_model.pth"
     )
     # 棋譜生成
-    kifu: str = mock_generate_kifu(pieces, is_sente)
+    kifu: str = generate_kifu(
+        pieces=pieces, is_sente=is_sente, csv_path=f"./data/csv/{id}.csv"
+    )
     # DB登録
 
     return {"kifu": kifu}

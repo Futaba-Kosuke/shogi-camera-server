@@ -22,17 +22,17 @@ SHOGI_PIECES: List[str] = [
     "成桂",
     "成香",
     "馬",
-    "竜",
-    "と金",
+    "龍",
+    "と",
 ]
 
 KAN_SUJI: List[str] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
 
-def mock_generate_kifu(pieces: IntegerArrayType, is_sente: bool) -> str:
-    before_pieces = np.loadtxt(
-        "../data/prev_board.csv", delimiter=",", dtype="int64"
-    )
+def generate_kifu(
+    pieces: IntegerArrayType, is_sente: bool, csv_path: str
+) -> str:
+    before_pieces = np.loadtxt(csv_path, delimiter=",", dtype=np.int32)
     if is_sente:
         before_move = list(
             zip(*np.where((pieces != before_pieces) & (before_pieces > 0)))
@@ -49,40 +49,37 @@ def mock_generate_kifu(pieces: IntegerArrayType, is_sente: bool) -> str:
         )
     kifu: str = ""
     if len(after_move) == 0:
-        print("変更ナシ")
+        pass
     elif len(before_move) == 0:
         diff_coords = list(zip(*(np.where(before_pieces != pieces))))
-        kifu = f"""{
-            9-diff_coords[0][1]}{
-            KAN_SUJI[diff_coords[0][0]]}{
-            SHOGI_PIECES[abs(pieces[diff_coords[0]]) - 1]}打"""
+        x, y = 9 - diff_coords[0][1], KAN_SUJI[diff_coords[0][0]]
+        kifu = f"{x}{y}{SHOGI_PIECES[abs(pieces[diff_coords[0]]) - 1]}打"
     else:
-        kifu = f"""{
-            9 - after_move[0][1]}{
-            KAN_SUJI[after_move[0][0]]}"""
+        kifu = f"{9 - after_move[0][1]}{KAN_SUJI[after_move[0][0]]}"
         if before_pieces[before_move[0]] != pieces[after_move[0]]:
-            kifu += f"""{
-            SHOGI_PIECES[abs(before_pieces[before_move[0]]) - 1]}成"""
+            kifu += f"{SHOGI_PIECES[abs(before_pieces[before_move[0]]) - 1]}成"
         else:
             kifu += f"{SHOGI_PIECES[abs(pieces[after_move[0]]) - 1]}"
         kifu += f"({9 - before_move[0][1]}{before_move[0][0] + 1})"
-    print(kifu)
-    np.savetxt("../data/prev_board.csv", pieces, delimiter=",", fmt="%d")
+    np.savetxt(csv_path, pieces, delimiter=",", fmt="%d")
     return kifu
 
 
 if __name__ == "__main__":
-    piece = np.array(
+    pieces = np.array(
         [
-            [-5, -4, -3, -2, 1, -2, -3, -4, -5],
-            [0, -6, 0, 0, 0, 0, 0, -7, 0],
-            [-8, -8, -8, -8, 0, 0, -8, -8, -8],
-            [0, 14, 8, 0, 0, 0, 8, 0, 0],
-            [0, 0, 0, 0, -8, 0, 0, 0, 0],
-            [8, 14, 0, 6, 0, 8, 8, 8, 0],
-            [0, 8, 0, 8, 8, 8, 0, 0, 8],
-            [8, 0, 0, 0, 0, 0, 0, 7, 0],
+            [-5, -4, -3, -2, -1, -2, -3, -4, -5],
+            [0, -7, 0, 0, 0, 0, 0, -6, 0],
+            [-8, -8, -8, -8, -8, -8, -8, -8, -8],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [8, 8, 8, 8, 8, 8, 8, 8, 8],
+            [8, -6, 0, 0, 0, 0, 0, -7, 0],
             [5, 4, 3, 2, 1, 2, 3, 4, 5],
         ]
     )
-    mock_generate_kifu(piece, True)
+    kifu: str = generate_kifu(
+        pieces=pieces, is_sente=True, csv_path="./data/csv/TEST.csv"
+    )
+    print(kifu)

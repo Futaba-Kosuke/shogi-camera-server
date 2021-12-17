@@ -20,3 +20,9 @@ data/**/*.png
 # firebase
 firebase/.env
 firebase/cred.json
+
+# CSV
+data/**/*.csv
+
+# environmental variables
+.env
