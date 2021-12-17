@@ -56,3 +56,18 @@ def move_piece(id: str, kifu: str) -> List[str]:
     kifu_list.append(kifu)
     game_realtime_db_ref.set(kifu_list)
     return kifu_list
+
+
+def end_game(id: str) -> None:
+    # realtime_db
+    game_realtime_db_ref = realtime_db.reference(id)
+    kifu_list: List[str] = game_realtime_db_ref.get()
+    kifu_list.append("終局")
+    game_realtime_db_ref.set(kifu_list)
+    # firestore
+    status: str = "先手勝ち" if len(kifu_list) % 2 == 1 else "後手勝ち"
+    game_firestore_ref = firestore.collection("games").document(id)
+    game_firestore_ref.update(
+        {"endTime": datetime.datetime.now(), "status": status}
+    )
+    return
