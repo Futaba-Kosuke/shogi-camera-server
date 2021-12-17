@@ -1,4 +1,4 @@
-from typing import Final
+from typing import Final, List
 
 import cv2
 import numpy as np
@@ -40,7 +40,7 @@ class StartResponseModel(BaseModel):
 
 
 class MoveResponseModel(BaseModel):
-    kifu: str
+    kifu_list: List[str]
 
 
 @app.get("/")
@@ -79,8 +79,9 @@ async def move_piece(
         pieces=pieces, is_sente=is_sente, csv_path=f"./data/csv/{id}.csv"
     )
     # DB登録
+    kifu_list: List[str] = db_operate.move_piece(id=id, kifu=kifu)
 
-    return {"kifu": kifu}
+    return {"kifu_list": kifu_list}
 
 
 def main() -> None:
