@@ -74,9 +74,13 @@ async def move_piece(
     pieces: IntegerArrayType = mock_classify_pieces(
         image=square_images, model_path="./models/shogi_model.pth"
     )
+    prev_kifu: str = db_operate.get_kifu_list(id=id)[-1]
     # 棋譜生成
     kifu: str = generate_kifu(
-        pieces=pieces, is_sente=is_sente, csv_path=f"./data/csv/{id}.csv"
+        pieces=pieces,
+        is_sente=is_sente,
+        csv_path=f"./data/csv/{id}.csv",
+        prev_kifu=prev_kifu,
     )
     # DB登録
     kifu_list: List[str] = db_operate.move_piece(id=id, kifu=kifu)

@@ -45,6 +45,11 @@ def create_game(sente: str, gote: str) -> str:
     return game_realtime_db_ref.key
 
 
+def get_kifu_list(id: str) -> List[str]:
+    game_realtime_db_ref = realtime_db.reference(id)
+    return game_realtime_db_ref.get()
+
+
 def move_piece(id: str, kifu: str) -> List[str]:
     game_realtime_db_ref = realtime_db.reference(id)
     kifu_list: List[str] = game_realtime_db_ref.get()

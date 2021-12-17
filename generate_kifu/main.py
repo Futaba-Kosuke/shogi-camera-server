@@ -30,7 +30,7 @@ KAN_SUJI: List[str] = ["一", "二", "三", "四", "五", "六", "七", "八", "
 
 
 def generate_kifu(
-    pieces: IntegerArrayType, is_sente: bool, csv_path: str
+    pieces: IntegerArrayType, is_sente: bool, csv_path: str, prev_kifu: str
 ) -> str:
     before_pieces = np.loadtxt(csv_path, delimiter=",", dtype=np.int32)
     if is_sente:
@@ -47,7 +47,6 @@ def generate_kifu(
         after_move = list(
             zip(*np.where((pieces != before_pieces) & (before_pieces >= 0)))
         )
-    kifu: str = ""
     if len(after_move) == 0:
         pass
     elif len(before_move) == 0:
@@ -55,12 +54,14 @@ def generate_kifu(
         x, y = 9 - diff_coords[0][1], KAN_SUJI[diff_coords[0][0]]
         kifu = f"{x}{y}{SHOGI_PIECES[abs(pieces[diff_coords[0]]) - 1]}打"
     else:
-        kifu = f"{9 - after_move[0][1]}{KAN_SUJI[after_move[0][0]]}"
+        x, y = 9 - after_move[0][1], KAN_SUJI[after_move[0][0]]
+        destination = "同" if prev_kifu.startswith(f"{x}{y}") else f"{x}{y}"
         if before_pieces[before_move[0]] != pieces[after_move[0]]:
-            kifu += f"{SHOGI_PIECES[abs(before_pieces[before_move[0]]) - 1]}成"
+            piece = f"{SHOGI_PIECES[abs(before_pieces[before_move[0]]) - 1]}成"
         else:
-            kifu += f"{SHOGI_PIECES[abs(pieces[after_move[0]]) - 1]}"
-        kifu += f"({9 - before_move[0][1]}{before_move[0][0] + 1})"
+            piece = f"{SHOGI_PIECES[abs(pieces[after_move[0]]) - 1]}"
+        prev_x, prev_y = 9 - before_move[0][1], before_move[0][0] + 1
+        kifu = f"{destination}{piece}({prev_x}{prev_y})"
     np.savetxt(csv_path, pieces, delimiter=",", fmt="%d")
     return kifu
 
@@ -80,6 +81,9 @@ if __name__ == "__main__":
         ]
     )
     kifu: str = generate_kifu(
-        pieces=pieces, is_sente=True, csv_path="./data/csv/TEST.csv"
+        pieces=pieces,
+        is_sente=True,
+        csv_path="./data/csv/TEST.csv",
+        prev_kifu="平手",
     )
     print(kifu)
