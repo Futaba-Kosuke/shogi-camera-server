@@ -87,4 +87,4 @@ class ShogiModel:
                 outputs: TensorType = self.model(inputs)
                 predicted: TensorType = torch.max(outputs, 1)[1]
                 results = np.append(results, int(CLASSES[predicted]))
-        return results.reshape(9, 9)
+        return results.reshape(9, 9).astype(np.int32)

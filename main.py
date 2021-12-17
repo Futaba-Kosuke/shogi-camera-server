@@ -31,6 +31,7 @@ DEFAULT_BOARD: Final[IntegerArrayType] = np.array(
 DATASET_DIR: Final[str] = "./data/dataset"
 MODEL_PATH: Final[str] = "./models/model.pth"
 
+
 class StartRequestModel(BaseModel):
     sente: str
     gote: str
@@ -78,7 +79,7 @@ async def move_piece(
     # コマ検出
     pieces: IntegerArrayType = shogi_model.predict(images=square_images)
     prev_kifu: str = db_operate.get_kifu_list(id=id)[-1]
-    
+
     # 棋譜生成
     kifu: str = generate_kifu(
         pieces=pieces,
@@ -86,7 +87,7 @@ async def move_piece(
         csv_path=f"./data/csv/{id}.csv",
         prev_kifu=prev_kifu,
     )
-      
+
     # DB登録
     kifu_list: List[str] = db_operate.move_piece(id=id, kifu=kifu)
 

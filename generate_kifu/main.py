@@ -48,6 +48,7 @@ def generate_kifu(
             zip(*np.where((pieces != before_pieces) & (before_pieces >= 0)))
         )
     if len(after_move) == 0:
+        kifu = ""
         pass
     elif len(before_move) == 0:
         diff_coords = list(zip(*(np.where(before_pieces != pieces))))
