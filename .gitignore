@@ -20,3 +20,7 @@ data/**/*.png
 # firebase
 firebase/.env
 firebase/cred.json
+
+# models
+models/*.pth
+models/**/*.pth
