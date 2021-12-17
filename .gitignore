@@ -26,3 +26,7 @@ data/**/*.csv
 
 # environmental variables
 .env
+
+# models
+models/*.pth
+models/**/*.pth
