@@ -21,6 +21,12 @@ data/**/*.png
 firebase/.env
 firebase/cred.json
 
+# CSV
+data/**/*.csv
+
+# environmental variables
+.env
+
 # models
 models/*.pth
 models/**/*.pth
