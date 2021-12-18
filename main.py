@@ -16,7 +16,7 @@ from predict_board import predict_board
 DEFAULT_BOARD: Final[IntegerArrayType] = np.array(
     [
         [-5, -4, -3, -2, -1, -2, -3, -4, -5],
-        [0, -6, 0, 0, 0, 0, 0, -7, 0],
+        [0, -7, 0, 0, 0, 0, 0, -6, 0],
         [-8, -8, -8, -8, -8, -8, -8, -8, -8],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
