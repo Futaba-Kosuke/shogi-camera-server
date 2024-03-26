@@ -16,7 +16,7 @@ from predict_board import predict_board
 DEFAULT_BOARD: Final[IntegerArrayType] = np.array(
     [
         [-5, -4, -3, -2, -1, -2, -3, -4, -5],
-        [0, -6, 0, 0, 0, 0, 0, -7, 0],
+        [0, -7, 0, 0, 0, 0, 0, -6, 0],
         [-8, -8, -8, -8, -8, -8, -8, -8, -8],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -26,7 +26,6 @@ DEFAULT_BOARD: Final[IntegerArrayType] = np.array(
         [5, 4, 3, 2, 1, 2, 3, 4, 5],
     ]
 )
-
 
 DATASET_DIR: Final[str] = "./data/dataset"
 MODEL_PATH: Final[str] = "./models/model.pth"
@@ -38,6 +37,10 @@ class StartRequestModel(BaseModel):
 
 
 class StartResponseModel(BaseModel):
+    id: str
+
+
+class EndRequestModel(BaseModel):
     id: str
 
 
@@ -60,6 +63,14 @@ def create_game(properties: StartRequestModel):
     id: str = db_operate.create_game(sente=sente, gote=gote)
     np.savetxt(f"./data/csv/{id}.csv", DEFAULT_BOARD, delimiter=",", fmt="%d")
     return {"id": id}
+
+
+@app.post("/end")
+def end_game(properties: EndRequestModel):
+    id: str = properties.id
+    db_operate.end_game(id=id)
+    os.remove(f"./data/csv/{id}.csv")
+    return
 
 
 @app.post("/move", response_model=MoveResponseModel)
